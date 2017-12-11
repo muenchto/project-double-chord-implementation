@@ -32,6 +32,7 @@ public class Chord {
         local_ip = "127.0.0.1";
 
         // create node
+        //Another Comment
 		m_node = new Node (Helper.createSocketAddress(local_ip+":"+args[0]));
 		
 		// determine if it's creating or joining a existing ring
