@@ -558,6 +558,7 @@ public class Node {
 						
 						domain.put(dom, ip);
 					}else if(type.equals("putip")) {
+						
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 						

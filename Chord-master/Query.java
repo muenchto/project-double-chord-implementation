@@ -91,6 +91,7 @@ public class Query {
 				int command1 = 0;
 				
 
+				
 				while(command1 <= 0 && command1 >=4) {
 					System.out.println("What you want to do ? (insert the number 1, 2 or 3)");
 					System.out.println("1 -> Insert Domain and IP");
