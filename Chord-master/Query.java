@@ -1,4 +1,8 @@
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Scanner;
 
 /**
@@ -82,35 +86,118 @@ public class Query {
 			// begin to take user input
 			Scanner userinput = new Scanner(System.in);
 			while(true) {
-				System.out.println("\nPlease enter your search key (or type \"quit\" to leave): ");
+				
 				String command = null;
-				command = userinput.nextLine();
+				int command1 = 0;
+				
+
+				while(command1 <= 0 && command1 >=4) {
+					System.out.println("What you want to do ? (insert the number 1, 2 or 3)");
+					System.out.println("1 -> Insert Domain and IP");
+					System.out.println("2 -> ResolveDNS");
+					System.out.println("3 -> QUIT");
+					command1 = userinput.nextInt();
+				}
+					
+
 				
 				// quit
-				if (command.startsWith("quit")) {
+				if (command1 == 3) {
 					System.exit(0);				
 				}
 				
-				// search
-				else if (command.length() > 0){
-					long hash = Helper.hashString(command);
-					System.out.println("\nHash value is "+Long.toHexString(hash));
-					InetSocketAddress result = Helper.requestAddress(localAddress, "FINDSUCC_"+hash);
+				//PUT
+				else if(command1 == 1) {
+					System.out.println("Please write your query for insert Domain and IP ( put <domain> <IP>) ");
+					command = userinput.nextLine();
+					String[] tok = command.split(" ");
+					String ippDomain = getIPport(tok[1]);
+					String ippIp = getIPport(tok[2]);
 					
-					// if fail to send request, local node is disconnected, exit
-					if (result == null) {
-						System.out.println("The node your are contacting is disconnected. Now exit.");
-						System.exit(0);
+					String[] domainTok = ippDomain.split(":");
+					String[] ipTok = ippIp.split(":");
+					
+					try {
+						Socket ss1 = new Socket(domainTok[0], Integer.parseInt(domainTok[1])+2000);
+						Socket ss2 = new Socket(ipTok[0], Integer.parseInt(ipTok[1])+2000);
+						//ObjectInputStream ois = new ObjectInputStream(ss.getInputStream());
+					    ObjectOutputStream oos1 = new ObjectOutputStream(ss1.getOutputStream());
+					    oos1.flush();
+					    
+					    ObjectOutputStream oos2 = new ObjectOutputStream(ss2.getOutputStream());
+					    oos2.flush();
+					    
+					    oos1.writeObject("putd");
+					    oos1.writeObject(tok[1]);
+					    oos1.writeObject(tok[2]);
+					    oos1.flush();
+					    
+					    oos2.writeObject("putip");
+					    oos2.writeObject(tok[1]);
+					    oos2.writeObject(tok[2]);
+					    oos2.flush();
+					    
+					    
+					    oos1.close();
+					    oos2.close();
+					    ss1.close();
+					    ss2.close();
+						
+					} catch (NumberFormatException | IOException e) {
+						e.printStackTrace();
 					}
 					
-					// print out response
-					System.out.println("\nResponse from node "+localAddress.getAddress().toString()+", port "+localAddress.getPort()+", position "+Helper.hexIdAndPosition(localAddress)+":");
-					System.out.println("Node "+result.getAddress().toString()+", port "+result.getPort()+", position "+Helper.hexIdAndPosition(result ));
+				//GET	
+				}else if(command1 == 2) {
+					command = userinput.nextLine();
+					
+					String[] tok = command.split(" ");
+					String ipp = getIPport(tok[1]);
+					String[] ipptk = ipp.split(":");
+					
+					try {
+						Socket ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1])+2000);
+						
+			    			ObjectOutputStream oos = new ObjectOutputStream(ss.getOutputStream());
+						ObjectInputStream ios = new ObjectInputStream(ss.getInputStream());
+				    		oos.flush();
+				    		oos.writeObject("getd");
+				    		oos.writeObject(tok[1]);
+				    		oos.flush();
+				    		String ret = (String) ios.readObject();
+				    		
+				    		System.out.println(ret);
+				    		
+				    		ios.close();
+				    		oos.close();
+				    		ss.close();
+				    		
+					} catch (NumberFormatException | IOException | ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+				// search
+				else if (command.length() > 0){
+										
 				}
 			}
 		}
 		else {
 			System.out.println("\nInvalid input. Now exit.\n");
 		}
+	}
+	
+	private static String getIPport(String command){
+		long hash = Helper.hashString(command);
+		System.out.println("\nHash value is "+Long.toHexString(hash));
+		InetSocketAddress result = Helper.requestAddress(localAddress, "FINDSUCC_"+hash);
+		
+		// if fail to send request, local node is disconnected, exit
+		if (result == null) {
+			System.out.println("The node your are contacting is disconnected. Now exit.");
+			System.exit(0);
+		}
+		
+		return result.getAddress().toString().substring(1, result.getAddress().toString().length()) + ":" + result.getPort();
 	}
 }
