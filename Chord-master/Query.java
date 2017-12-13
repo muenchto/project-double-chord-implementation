@@ -93,19 +93,25 @@ public class Query {
 				
 				// search
 				else if (command.length() > 0){
-					long hash = Helper.hashString(command);
-					System.out.println("\nHash value is "+Long.toHexString(hash));
-					InetSocketAddress result = Helper.requestAddress(localAddress, "FINDSUCC_"+hash);
-					
+					long hash0 = Helper.hashString(command, 0);
+					long hash1 = Helper.hashString(command, 1);
+					System.out.println("\nHash value is "+Long.toHexString(hash0) + " and "+ Long.toHexString(hash1));
+					InetSocketAddress result0 = Helper.requestAddress(localAddress, "FINDSUCC_"+hash0);
+					InetSocketAddress result1 = Helper.requestAddress(localAddress, "FINDSUCC_"+hash1);
+
 					// if fail to send request, local node is disconnected, exit
-					if (result == null) {
-						System.out.println("The node your are contacting is disconnected. Now exit.");
+					if (result0 == null) {
+						System.out.println("The node of hash in ring 0 you are contacting is disconnected. Now exit.");
+						System.exit(0);
+					} else if (result1 == null) {
+						System.out.println("The node of hash in ring 1 you are contacting is disconnected. Now exit.");
 						System.exit(0);
 					}
 					
 					// print out response
 					System.out.println("\nResponse from node "+localAddress.getAddress().toString()+", port "+localAddress.getPort()+", position "+Helper.hexIdAndPosition(localAddress)+":");
-					System.out.println("Node "+result.getAddress().toString()+", port "+result.getPort()+", position "+Helper.hexIdAndPosition(result ));
+					System.out.println("Node in ring 0: "+result0.getAddress().toString()+", port "+result0.getPort()+", position "+Helper.hexIdAndPosition(result0));
+					System.out.println("Node in ring 1: "+result1.getAddress().toString()+", port "+result1.getPort()+", position "+Helper.hexIdAndPosition(result1));
 				}
 			}
 		}

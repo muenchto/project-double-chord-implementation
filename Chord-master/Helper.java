@@ -46,10 +46,14 @@ public class Helper {
 	/**
 	 * Compute a socket address' 32 bit identifier
 	 * @param addr: socket address
+	 * @param ring_nr: the ring, in which the hash should be performed
 	 * @return 32-bit identifier in long type
 	 */
-	public static long hashSocketAddress (InetSocketAddress addr) {
+	public static long hashSocketAddress (InetSocketAddress addr, int ring_nr) {
 		int i = addr.hashCode();
+		if (ring_nr == 1) {
+			return (hashHashCode(i) + Helper.getPowerOfTwo(31)) % Helper.getPowerOfTwo(32);
+		}
 		return hashHashCode(i);
 	}
 
@@ -60,6 +64,20 @@ public class Helper {
 	 */
 	public static long hashString (String s) {
 		int i = s.hashCode();
+		return hashHashCode(i);
+	}
+
+	/**
+	 * Compute a string's 32 bit identifier
+	 * @param s: string
+	 * @param ring_nr: the ring number, in which the hash should be performed
+	 * @return 32-bit identifier in long type
+	 */
+	public static long hashString (String s, int ring_nr) {
+		int i = s.hashCode();
+		if (ring_nr == 1) {
+			return (hashHashCode(i) + Helper.getPowerOfTwo(31)) % Helper.getPowerOfTwo(32);
+		}
 		return hashHashCode(i);
 	}
 
@@ -115,8 +133,8 @@ public class Helper {
 	/**
 	 * Normalization, computer universal id's value relative to local id
 	 * (regard local node as 0)
-	 * @param original: original/universal identifier
-	 * @param n: node's identifier
+	 * @param universal: original/universal identifier
+	 * @param local: node's identifier
 	 * @return relative identifier
 	 */
 	public static long computeRelativeId (long universal, long local) {
@@ -134,13 +152,15 @@ public class Helper {
 	 * @return 
 	 */
 	public static String hexIdAndPosition (InetSocketAddress addr) {
-		long hash = hashSocketAddress(addr);
-		return (longTo8DigitHex(hash)+" ("+hash*100/Helper.getPowerOfTwo(32)+"%)");
+		long hash0 = hashSocketAddress(addr, 0);
+		long hash1 = hashSocketAddress(addr, 1);
+		return ("in RING1: " + longTo8DigitHex(hash0)+" ("+hash0*100/Helper.getPowerOfTwo(32)+"%)"
+			+ " and in RING2: " + longTo8DigitHex(hash1)+" ("+hash1*100/Helper.getPowerOfTwo(32)+"%)");
 	}
 
 	/**
-	 * 
-	 * @param Generate a long type number's 8-digit hex string
+	 * Generate a long type number's 8-digit hex string
+	 * @param l
 	 * @return
 	 */
 	public static String longTo8DigitHex (long l) {
@@ -156,7 +176,7 @@ public class Helper {
 	
 	/**
 	 * Return a node's finger[i].start, universal
-	 * @param node: node's identifier
+	 * @param nodeid: node's identifier
 	 * @param i: finger table index
 	 * @return finger[i].start's identifier
 	 */
@@ -213,7 +233,7 @@ public class Helper {
 	/**
 	 * Send request to server and read response
 	 * @param server
-	 * @param request
+	 * @param req
 	 * @return response, might be null if
 	 * (1) invalid input
 	 * (2) cannot open socket or write request to it

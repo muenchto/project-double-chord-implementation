@@ -11,7 +11,9 @@ import java.util.Scanner;
  */
 
 public class Chord {
-	
+
+	private static final int NUM_RINGS = 2;
+
 	private static Node m_node;
 	private static InetSocketAddress m_contact;
 	private static Helper m_helper;
@@ -24,16 +26,14 @@ public class Chord {
 		String local_ip = null;
 		try {
 			local_ip = InetAddress.getLocalHost().getHostAddress();
-            System.out.println("local ip: "+local_ip);
 
 		} catch (UnknownHostException e1) {
             e1.printStackTrace();
 		}
-        local_ip = "127.0.0.1";
 
         // create node
         //Another Comment
-		m_node = new Node (Helper.createSocketAddress(local_ip+":"+args[0]));
+		m_node = new Node (Helper.createSocketAddress(local_ip+":"+args[0]), NUM_RINGS);
 		
 		// determine if it's creating or joining a existing ring
 		// create, contact is this node itself

@@ -1,4 +1,5 @@
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -10,7 +11,7 @@ import java.util.HashMap;
 
 public class Node {
 
-	private long localId;
+	private ArrayList<Long> localId;
 	private InetSocketAddress localAddress;
 	private InetSocketAddress predecessor;
 	private HashMap<Integer, InetSocketAddress> finger;
@@ -24,10 +25,14 @@ public class Node {
 	 * Constructor
 	 * @param address: this node's local address
 	 */
-	public Node (InetSocketAddress address) {
+	public Node (InetSocketAddress address, final int NUM_RINGS) {
 
 		localAddress = address;
-		localId = Helper.hashSocketAddress(localAddress);
+
+		localId = new ArrayList<>();
+        for (int i = 0; i < NUM_RINGS; i++) {
+            localId.add(Helper.hashSocketAddress(localAddress, i));
+        }
 
 		// initialize an empty finge table
 		finger = new HashMap<Integer, InetSocketAddress>();
@@ -56,7 +61,7 @@ public class Node {
 		// if contact is other node (join ring), try to contact that node
 		// (contact will never be null)
 		if (contact != null && !contact.equals(localAddress)) {
-			InetSocketAddress successor = Helper.requestAddress(contact, "FINDSUCC_" + localId);
+			InetSocketAddress successor = Helper.requestAddress(contact, "FINDSUCC_" + localId.get(0));
 			if (successor == null)  {
 				System.out.println("\nCannot find node you are trying to contact. Please exit.\n");
 				return false;
@@ -94,9 +99,9 @@ public class Node {
 			this.setPredecessor(newpre);
 		}
 		else {
-			long oldpre_id = Helper.hashSocketAddress(predecessor);
-			long local_relative_id = Helper.computeRelativeId(localId, oldpre_id);
-			long newpre_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(newpre), oldpre_id);
+			long oldpre_id = Helper.hashSocketAddress(predecessor, 0);
+			long local_relative_id = Helper.computeRelativeId(localId.get(0), oldpre_id);
+			long newpre_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(newpre, 0), oldpre_id);
 			if (newpre_relative_id > 0 && newpre_relative_id < local_relative_id)
 				this.setPredecessor(newpre);
 		}
@@ -128,7 +133,7 @@ public class Node {
 
 	/**
 	 * Ask current node to find id's predecessor
-	 * @param id
+	 * @param findid
 	 * @return id's successor's socket address
 	 */
 	private InetSocketAddress find_predecessor (long findid) {
@@ -137,8 +142,8 @@ public class Node {
 		InetSocketAddress most_recently_alive = this.localAddress;
 		long n_successor_relative_id = 0;
 		if (n_successor != null)
-			n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor), Helper.hashSocketAddress(n));
-		long findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n));
+			n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor, 0), Helper.hashSocketAddress(n, 0));
+		long findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, 0));
 
 		while (!(findid_relative_id > 0 && findid_relative_id <= n_successor_relative_id)) {
 
@@ -186,8 +191,8 @@ public class Node {
 				}
 
 				// compute relative ids for while loop judgement
-				n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor), Helper.hashSocketAddress(n));
-				findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n));
+				n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor, 0), Helper.hashSocketAddress(n, 0));
+				findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, 0));
 			}
 			if (pre_n.equals(n))
 				break;
@@ -201,7 +206,7 @@ public class Node {
 	 * @return closest finger preceding node's socket address
 	 */
 	public InetSocketAddress closest_preceding_finger (long findid) {
-		long findid_relative = Helper.computeRelativeId(findid, localId);
+		long findid_relative = Helper.computeRelativeId(findid, localId.get(0));
 
 		// check from last item in finger table
 		for (int i = 32; i > 0; i--) {
@@ -209,8 +214,8 @@ public class Node {
 			if (ith_finger == null) {
 				continue;
 			}
-			long ith_finger_id = Helper.hashSocketAddress(ith_finger);
-			long ith_finger_relative_id = Helper.computeRelativeId(ith_finger_id, localId);
+			long ith_finger_id = Helper.hashSocketAddress(ith_finger, 0);
+			long ith_finger_relative_id = Helper.computeRelativeId(ith_finger_id, localId.get(0));
 
 			// if its relative id is the closest, check if its alive
 			if (ith_finger_relative_id > 0 && ith_finger_relative_id < findid_relative)  {
@@ -394,7 +399,7 @@ public class Node {
 	 */
 
 	public long getId() {
-		return localId;
+		return localId.get(0);
 	}
 
 	public InetSocketAddress getAddress() {
@@ -457,7 +462,7 @@ public class Node {
 			System.out.println("\nPREDECESSOR:\t\t\tNULL");
 		System.out.println("\nFINGER TABLE:\n");
 		for (int i = 1; i <= 32; i++) {
-			long ithstart = Helper.ithStart(Helper.hashSocketAddress(localAddress),i);
+			long ithstart = Helper.ithStart(Helper.hashSocketAddress(localAddress, 0),i);
 			InetSocketAddress f = finger.get(i);
 			StringBuilder sb = new StringBuilder();
 			sb.append(i+"\t"+ Helper.longTo8DigitHex(ithstart)+"\t\t");

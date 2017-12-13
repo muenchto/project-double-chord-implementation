@@ -67,7 +67,7 @@ public class Talker implements Runnable{
 			}
 		}
 		else if (request.startsWith("YOURPRE")) {
-			result =local.getPredecessor();
+			result = local.getPredecessor();
 			if (result != null) {
 				String ip = result.getAddress().toString();
 				int port = result.getPort();
