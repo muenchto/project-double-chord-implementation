@@ -1,6 +1,12 @@
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Node class that implements the core data structure 
@@ -20,6 +26,7 @@ public class Node {
 	private Stabilize stabilize;
 	private FixFingers fix_fingers;
 	private AskPredecessor ask_predecessor;
+	private ServantThread sv;
 
 	/**
 	 * Constructor
@@ -48,6 +55,7 @@ public class Node {
 		stabilize = new Stabilize(this);
 		fix_fingers = new FixFingers(this);
 		ask_predecessor = new AskPredecessor(this);
+		sv = new ServantThread(this);
 	}
 
 	/**
@@ -74,6 +82,7 @@ public class Node {
 		stabilize.start();
 		fix_fingers.start();
 		ask_predecessor.start();
+		sv.start();
 
 		return true;
 	}
@@ -489,4 +498,101 @@ public class Node {
 		if (ask_predecessor != null)
 			ask_predecessor.toDie();
 	}
+
+	private class ServantThread extends Thread{
+
+		private Map<String,String> ips;
+		private Map<String,String> domain;
+		private ServerSocket sv;
+		private boolean alive;
+
+		ServantThread(Node n){
+
+			ips = new HashMap<>();
+			domain = new HashMap<>();
+			alive = true;
+			InetSocketAddress localAddress = n.getAddress();
+			int port = localAddress.getPort() + 2000;
+			System.out.println("port " + port);
+			try {
+				sv = new ServerSocket(port);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		public void run() {
+			while(alive) {
+				try {
+					Socket ss = sv.accept();
+					ResponseThread rt = new ResponseThread(ss, ips, domain);
+					rt.start();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		public void toDie() {
+			alive = false;
+		}
+
+		private class ResponseThread extends Thread {
+
+			private Socket ss;
+			private Map<String,String> ips;
+			private Map<String,String> domain;
+
+			ResponseThread(Socket ss, Map<String,String> ips, Map<String,String> domain){
+				this.ss = ss;
+				this.ips = ips;
+				this.domain = domain;
+			}
+
+			public void run() {
+
+				try {
+					ObjectOutputStream oos = new ObjectOutputStream(ss.getOutputStream());
+					ObjectInputStream ois = new ObjectInputStream(ss.getInputStream());
+					oos.flush();
+					String type = (String) ois.readObject();
+
+					if(type.equals("putd")) {
+						String dom = (String) ois.readObject();
+						String ip = (String) ois.readObject();
+
+						domain.put(dom, ip);
+					}else if(type.equals("putip")) {
+
+						String dom = (String) ois.readObject();
+						String ip = (String) ois.readObject();
+
+						ips.put(ip, dom);
+					}else if(type.equals("getd")) {
+						String dom = (String) ois.readObject();
+						String ret = domain.get(dom);
+
+						System.out.println(ret);
+						oos.writeObject(ret);
+						oos.flush();
+					}else if(type.equals("getip")) {
+						String ip = (String) ois.readObject();
+						String ret = ips.get(ip);
+
+						System.out.println(ret);
+						oos.writeObject(ret);
+						oos.flush();
+					}
+
+					ois.close();
+					oos.close();
+					ss.close();
+
+				} catch (IOException | ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }
+
