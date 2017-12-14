@@ -85,14 +85,16 @@ public class Query {
 
 			// begin to take user input
 			Scanner userinput = new Scanner(System.in);
+			Scanner userinput2 = new Scanner(System.in);
+			Scanner userinput3 = new Scanner(System.in);
 			while(true) {
 
 				String command = null;
 				int command1 = 0;
 
 
-
-				while(command1 <= 0 && command1 >=4) {
+				
+				while(command1 <= 0 || command1 >=4 ) {
 					System.out.println("What you want to do ? (insert the number 1, 2 or 3)");
 					System.out.println("1 -> Insert Domain and IP");
 					System.out.println("2 -> ResolveDNS");
@@ -110,9 +112,13 @@ public class Query {
 				//PUT
 				else if(command1 == 1) {
 					System.out.println("Please write your query for insert Domain and IP ( put <domain> <IP>) ");
-					command = userinput.nextLine();
+
+					command = userinput2.nextLine();
+					System.out.println("eheh -> "+command);
 					String[] tok = command.split(" ");
+					System.out.println("to k " +tok[0]);
 					String ippDomain = getIPport(tok[1]);
+
 					String ippIp = getIPport(tok[2]);
 
 					String[] domainTok = ippDomain.split(":");
@@ -150,37 +156,75 @@ public class Query {
 
 				//GET
 				}else if(command1 == 2) {
-					command = userinput.nextLine();
 
-					String[] tok = command.split(" ");
-					String ipp = getIPport(tok[1]);
-					String[] ipptk = ipp.split(":");
+					String get = null;
+					System.out.println("Which Resolve you want? (NORMAL or REVERSE)");
+					get = userinput2.nextLine();
+//					while(!get.equals("NORMAL") || !get.equals("REVERSE")) {
+//						System.out.println("Which Resolve you want? (NORMAL or REVERSE)");
+//						get = userinput2.nextLine();
+//					}
+					if(get.equals("NORMAL")) {
+						command = userinput2.nextLine();
 
-					try {
-						Socket ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1])+2000);
+						String[] tok = command.split(" ");
+						String ipp = getIPport(tok[1]);
+						String[] ipptk = ipp.split(":");
 
-			    			ObjectOutputStream oos = new ObjectOutputStream(ss.getOutputStream());
-						ObjectInputStream ios = new ObjectInputStream(ss.getInputStream());
-				    		oos.flush();
-				    		oos.writeObject("getd");
-				    		oos.writeObject(tok[1]);
-				    		oos.flush();
-				    		String ret = (String) ios.readObject();
+						try {
+							Socket ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1])+2000);
 
-				    		System.out.println(ret);
+				    			ObjectOutputStream oos = new ObjectOutputStream(ss.getOutputStream());
+							ObjectInputStream ios = new ObjectInputStream(ss.getInputStream());
+					    		oos.flush();
+					    		oos.writeObject("getd");
+					    		oos.writeObject(tok[1]);
+					    		oos.flush();
+					    		String ret = (String) ios.readObject();
 
-				    		ios.close();
-				    		oos.close();
-				    		ss.close();
+					    		System.out.println(ret);
 
-					} catch (NumberFormatException | IOException | ClassNotFoundException e) {
-						e.printStackTrace();
+					    		ios.close();
+					    		oos.close();
+					    		ss.close();
+
+						} catch (NumberFormatException | IOException | ClassNotFoundException e) {
+							e.printStackTrace();
+						}
+					}else if(get.equals("REVERSE")) {
+						command = userinput3.nextLine();
+
+						String[] tok = command.split(" ");
+						String ipp = getIPport(tok[1]);
+						String[] ipptk = ipp.split(":");
+
+						try {
+							Socket ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1])+2000);
+
+				    			ObjectOutputStream oos = new ObjectOutputStream(ss.getOutputStream());
+							ObjectInputStream ios = new ObjectInputStream(ss.getInputStream());
+					    		oos.flush();
+					    		oos.writeObject("getip");
+					    		oos.writeObject(tok[1]);
+					    		oos.flush();
+					    		String ret = (String) ios.readObject();
+
+					    		System.out.println(ret);
+
+					    		ios.close();
+					    		oos.close();
+					    		ss.close();
+
+						} catch (NumberFormatException | IOException | ClassNotFoundException e) {
+							e.printStackTrace();
+						}
 					}
+
 				}
 				// search
-				else if (command.length() > 0){
-
-				}
+//				else if (command.length() > 0){
+//
+//				}
 			}
 		}
 		else {
