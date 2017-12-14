@@ -234,16 +234,29 @@ public class Query {
 		}
 	}
 
-	private static String getIPport(String command){
+	private static String getIPport(String command) {
+		int ring_nr = -1;
+		return getIPport(command, ring_nr);
+	}
+
+	private static String getIPport(String command, int ring_nr){
 		long hash = Helper.hashString(command);
 
         System.out.println("\nHash value is "+Long.toHexString(hash));
 
-		InetSocketAddress result = Helper.requestAddress(localAddress, "FINDSUCC_"+hash);
+		InetSocketAddress result;
+		if (ring_nr == -1) {
+			// dont care about rings, find the closest server for hash
+			result = Helper.requestAddress(localAddress, "FINDSUCC_" + hash);
+		} else {
+			//care about rings, find the responsible server in specified ring
+			result = Helper.requestAddress(localAddress, "FINDSUCC_" + hash, ring_nr);
+		}
+
 
 		// if fail to send request, local node is disconnected, exit
 		if (result == null) {
-			System.out.println("The node your are contacting is disconnected. Now exit.");
+			System.out.println("The node you are contacting is disconnected. Now exit.");
 			System.exit(0);
 		}
 
