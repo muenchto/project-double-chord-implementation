@@ -165,7 +165,8 @@ public class Query {
 //						get = userinput2.nextLine();
 //					}
 					if(get.equals("NORMAL")) {
-						command = userinput2.nextLine();
+                        System.out.println(" Insert get <Domain>");
+                        command = userinput2.nextLine();
 
 						String[] tok = command.split(" ");
 						String ipp = getIPport(tok[1]);
@@ -192,6 +193,7 @@ public class Query {
 							e.printStackTrace();
 						}
 					}else if(get.equals("REVERSE")) {
+                        System.out.println(" Insert get <IP>");
 						command = userinput3.nextLine();
 
 						String[] tok = command.split(" ");
@@ -234,7 +236,9 @@ public class Query {
 
 	private static String getIPport(String command){
 		long hash = Helper.hashString(command);
-		System.out.println("\nHash value is "+Long.toHexString(hash));
+
+        System.out.println("\nHash value is "+Long.toHexString(hash));
+
 		InetSocketAddress result = Helper.requestAddress(localAddress, "FINDSUCC_"+hash);
 
 		// if fail to send request, local node is disconnected, exit

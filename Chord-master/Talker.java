@@ -50,7 +50,8 @@ public class Talker implements Runnable{
 		}
 		if (request.startsWith("CLOSEST")) {
 			long id = Long.parseLong(request.split("_")[1]);
-			result = local.closest_preceding_finger(id);
+			int ring_nr = Integer.parseInt(request.split("_")[2]);
+			result = local.closest_preceding_finger(id, ring_nr);
 			String ip = result.getAddress().toString();
 			int port = result.getPort();
 			ret = "MYCLOSEST_"+ip+":"+port;
@@ -79,7 +80,8 @@ public class Talker implements Runnable{
 		}
 		else if (request.startsWith("FINDSUCC")) {
 			long id = Long.parseLong(request.split("_")[1]);
-			result = local.find_successor(id);
+			int ring_nr = Integer.parseInt(request.split("_")[2]);
+			result = local.find_successor(id, ring_nr);
 			String ip = result.getAddress().toString();
 			int port = result.getPort();
 			ret = "FOUNDSUCC_"+ip+":"+port;

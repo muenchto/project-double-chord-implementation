@@ -121,13 +121,13 @@ public class Node {
 	 * @param id
 	 * @return id's successor's socket address
 	 */
-	public InetSocketAddress find_successor (long id) {
+	public InetSocketAddress find_successor (long id, int ring_nr) {
 
 		// initialize return value as this node's successor (might be null)
 		InetSocketAddress ret = this.getSuccessor();
 
 		// find predecessor
-		InetSocketAddress pre = find_predecessor(id);
+		InetSocketAddress pre = find_predecessor(id, ring_nr);
 
 		// if other node found, ask it for its successor
 		if (!pre.equals(localAddress))
@@ -145,14 +145,35 @@ public class Node {
 	 * @param findid
 	 * @return id's successor's socket address
 	 */
-	private InetSocketAddress find_predecessor (long findid) {
+	private InetSocketAddress find_predecessor (long findid, int ring_nr) {
 		InetSocketAddress n = this.localAddress;
 		InetSocketAddress n_successor = this.getSuccessor();
 		InetSocketAddress most_recently_alive = this.localAddress;
+        long findid_relative_id;
+
+        if (ring_nr == -1) {
+
+            //check in which ring the findid is closer to local node
+            long findid_relative_id0 = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, 0));
+            long findid_relative_id1 = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, 1));
+
+            if (findid_relative_id0 <= findid_relative_id1) {
+                findid_relative_id = findid_relative_id0;
+                ring_nr = 0;
+            } else {
+                findid_relative_id = findid_relative_id1;
+                ring_nr = 1;
+            }
+        }
+        else {
+            findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, ring_nr));
+        }
+
 		long n_successor_relative_id = 0;
 		if (n_successor != null)
-			n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor, 0), Helper.hashSocketAddress(n, 0));
-		long findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, 0));
+			n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor, ring_nr), Helper.hashSocketAddress(n, ring_nr));
+
+
 
 		while (!(findid_relative_id > 0 && findid_relative_id <= n_successor_relative_id)) {
 
@@ -161,17 +182,17 @@ public class Node {
 
 			// if current node is local node, find my closest
 			if (n.equals(this.localAddress)) {
-				n = this.closest_preceding_finger(findid);
+				n = this.closest_preceding_finger(findid, ring_nr);
 			}
 
 			// else current node is remote node, sent request to it for its closest
 			else {
-				InetSocketAddress result = Helper.requestAddress(n, "CLOSEST_" + findid);
+				InetSocketAddress result = Helper.requestAddress(n, "CLOSEST_" + findid, ring_nr);
 
 				// if fail to get response, set n to most recently 
 				if (result == null) {
 					n = most_recently_alive;
-					n_successor = Helper.requestAddress(n, "YOURSUCC");
+					n_successor = Helper.requestAddress(n, "YOURSUCC", ring_nr);
 					if (n_successor==null) {
 						System.out.println("It's not possible.");
 						return localAddress;
@@ -188,20 +209,20 @@ public class Node {
 					// set n as most recently alive
 					most_recently_alive = n;		
 					// ask "result" for its successor
-					n_successor = Helper.requestAddress(result, "YOURSUCC");	
+					n_successor = Helper.requestAddress(result, "YOURSUCC", ring_nr);
 					// if we can get its response, then "result" must be our next n
 					if (n_successor!=null) {
 						n = result;
 					}
 					// else n sticks, ask n's successor
 					else {
-						n_successor = Helper.requestAddress(n, "YOURSUCC");
+						n_successor = Helper.requestAddress(n, "YOURSUCC", ring_nr);
 					}
 				}
 
 				// compute relative ids for while loop judgement
-				n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor, 0), Helper.hashSocketAddress(n, 0));
-				findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, 0));
+				n_successor_relative_id = Helper.computeRelativeId(Helper.hashSocketAddress(n_successor, ring_nr), Helper.hashSocketAddress(n, ring_nr));
+				findid_relative_id = Helper.computeRelativeId(findid, Helper.hashSocketAddress(n, ring_nr));
 			}
 			if (pre_n.equals(n))
 				break;
@@ -214,8 +235,15 @@ public class Node {
 	 * @param findid
 	 * @return closest finger preceding node's socket address
 	 */
-	public InetSocketAddress closest_preceding_finger (long findid) {
-		long findid_relative = Helper.computeRelativeId(findid, localId.get(0));
+	public InetSocketAddress closest_preceding_finger (long findid, int ring_nr) {
+
+	    //ring number should not be -1, but if it is, FATAL ERROR, exit!
+        if (ring_nr == -1) {
+            System.out.println("FATAL ERROR: ring number was -1 in closest_preceding_finger()!");
+            System.exit(1);
+        }
+
+		long findid_relative = Helper.computeRelativeId(findid, localId.get(ring_nr));
 
 		// check from last item in finger table
 		for (int i = 32; i > 0; i--) {
@@ -223,8 +251,8 @@ public class Node {
 			if (ith_finger == null) {
 				continue;
 			}
-			long ith_finger_id = Helper.hashSocketAddress(ith_finger, 0);
-			long ith_finger_relative_id = Helper.computeRelativeId(ith_finger_id, localId.get(0));
+			long ith_finger_id = Helper.hashSocketAddress(ith_finger, ring_nr);
+			long ith_finger_relative_id = Helper.computeRelativeId(ith_finger_id, localId.get(ring_nr));
 
 			// if its relative id is the closest, check if its alive
 			if (ith_finger_relative_id > 0 && ith_finger_relative_id < findid_relative)  {

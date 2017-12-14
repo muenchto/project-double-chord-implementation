@@ -194,21 +194,41 @@ public class Helper {
 	}
 
 	/**
-	 * Generate requested address by sending request to server
+	 * Generate requested address by sending request to server. As no ring is specified, the method will look
+	 * for the closest server in all rings (indicated by ring_nr = -1)
 	 * @param server
 	 * @param req: request
+	 * @return generated socket address,
+	 * might be null if
+	 * (1) invalid input
+	 * (2) response is null (typically cannot send request)
+	 * (3) fail to create address from reponse
+	 */
+	public static InetSocketAddress requestAddress (InetSocketAddress server, String req) {
+		int ring_nr = -1;
+		return requestAddress(server, req, ring_nr);
+	}
+
+	/**
+	 * Generate requested address in a specific ring by sending request to server
+	 * @param server
+	 * @param req: request
+	 * @param ring_nr: the specified ring in which the address should be searched
 	 * @return generated socket address, 
 	 * might be null if 
 	 * (1) invalid input
 	 * (2) response is null (typically cannot send request)
 	 * (3) fail to create address from reponse
 	 */
-	public static InetSocketAddress requestAddress (InetSocketAddress server, String req) {
+	public static InetSocketAddress requestAddress (InetSocketAddress server, String req, int ring_nr) {
 
 		// invalid input, return null
 		if (server == null || req == null) {
 			return null;
 		}
+
+        //append ring number to request string
+        req = req + "_"+ring_nr;
 
 		// send request to server
 		String response = sendRequest(server, req);
