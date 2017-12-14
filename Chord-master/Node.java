@@ -556,13 +556,20 @@ public class Node {
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 						
+						System.out.println("putd -> dom " + dom + " ip -> "+ ip );
 						domain.put(dom, ip);
+						System.out.println("putd MAP -> dom " + dom + " ip -> "+ domain.get(dom) );
 					}else if(type.equals("putip")) {
 						
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 						
+						System.out.println("putip -> ip " + ip + " dom -> "+ dom );
+						
 						ips.put(ip, dom);
+						
+						System.out.println("putip MAP -> ip " + ip + " dom -> "+ ips.get(ip) );
+						
 					}else if(type.equals("getd")) {
 						String dom = (String) ois.readObject();
 						String ret = domain.get(dom);
