@@ -117,22 +117,38 @@ public class Query {
 					System.out.println("eheh -> "+command);
 					String[] tok = command.split(" ");
 					System.out.println("to k " +tok[0]);
-					String ippDomain = getIPport(tok[1]);
+					
+					String ippDomain = getIPport(tok[1],0);
 
-					String ippIp = getIPport(tok[2]);
+					String ippIp = getIPport(tok[2],0);
+					
+					String secondDomain = getIPport(tok[1], 1);
+					
+					String secondIp = getIPport(tok[2], 1);
 
 					String[] domainTok = ippDomain.split(":");
 					String[] ipTok = ippIp.split(":");
+					String[] secondDomTok = secondDomain.split(":");
+					String[] secondIpTok = secondIp.split(":");
 
 					try {
 						Socket ss1 = new Socket(domainTok[0], Integer.parseInt(domainTok[1])+2000);
 						Socket ss2 = new Socket(ipTok[0], Integer.parseInt(ipTok[1])+2000);
+						
+						Socket ss3 = new Socket(secondDomTok[0], Integer.parseInt(secondDomTok[1])+2000);
+						Socket ss4 = new Socket(secondIpTok[0], Integer.parseInt(secondIpTok[1])+2000);
 						//ObjectInputStream ois = new ObjectInputStream(ss.getInputStream());
 					    ObjectOutputStream oos1 = new ObjectOutputStream(ss1.getOutputStream());
 					    oos1.flush();
 
 					    ObjectOutputStream oos2 = new ObjectOutputStream(ss2.getOutputStream());
 					    oos2.flush();
+					    
+					    ObjectOutputStream oos3 = new ObjectOutputStream(ss3.getOutputStream());
+					    oos3.flush();
+					    
+					    ObjectOutputStream oos4 = new ObjectOutputStream(ss4.getOutputStream());
+					    oos4.flush();
 
 					    oos1.writeObject("putd");
 					    oos1.writeObject(tok[1]);
@@ -143,13 +159,26 @@ public class Query {
 					    oos2.writeObject(tok[1]);
 					    oos2.writeObject(tok[2]);
 					    oos2.flush();
+					    
+					    oos3.writeObject("putd");
+					    oos3.writeObject(tok[1]);
+					    oos3.writeObject(tok[2]);
+					    oos3.flush();
+
+					    oos4.writeObject("putip");
+					    oos4.writeObject(tok[1]);
+					    oos4.writeObject(tok[2]);
+					    oos4.flush();
 
 
 					    oos1.close();
 					    oos2.close();
+					    oos3.close();
+					    oos4.close();
 					    ss1.close();
 					    ss2.close();
-
+					    ss3.close();
+					    ss4.close();
 					} catch (NumberFormatException | IOException e) {
 						e.printStackTrace();
 					}
