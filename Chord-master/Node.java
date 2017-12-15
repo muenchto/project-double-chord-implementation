@@ -589,32 +589,32 @@ public class Node {
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 
-						System.out.println("putd -> dom " + dom + " ip -> "+ ip );
+						System.out.println("put Domain and IP -> dom " + dom + " ip -> "+ ip );
 						domain.put(dom, ip);
-						System.out.println("putd MAP -> dom " + dom + " ip -> "+ domain.get(dom) );
+						System.out.println("Domain and IP in MAP -> dom " + dom + " ip -> "+ domain.get(dom) );
 					}else if(type.equals("putip")) {
 
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 
-						System.out.println("putip -> ip " + ip + " dom -> "+ dom );
+						System.out.println("put IP and Domain -> ip " + ip + " dom -> "+ dom );
 
 						ips.put(ip, dom);
 
-						System.out.println("putip MAP -> ip " + ip + " dom -> "+ ips.get(ip) );
+						System.out.println(" IP and Domain in MAP -> ip " + ip + " dom -> "+ ips.get(ip) );
 
 					}else if(type.equals("getd")) {
 						String dom = (String) ois.readObject();
 						String ret = domain.get(dom);
 
-						System.out.println(ret);
+						System.out.println("The IP of Domain: "+ dom + " is: "+ret);
 						oos.writeObject(ret);
 						oos.flush();
 					}else if(type.equals("getip")) {
 						String ip = (String) ois.readObject();
 						String ret = ips.get(ip);
 
-						System.out.println(ret);
+						System.out.println("The Domain of IP: " + ip + " is: " + ret);
 						oos.writeObject(ret);
 						oos.flush();
 					}
