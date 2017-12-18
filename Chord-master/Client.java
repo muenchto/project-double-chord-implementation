@@ -183,7 +183,7 @@ public class Client {
 
 						System.out.println("You putted this: put domain: " + tok[1] + " IP: " + tok[2]);
 
-						Thread.sleep(10);
+						Thread.sleep(100);
 						oos1.close();
 						oos2.close();
 						oos3.close();
