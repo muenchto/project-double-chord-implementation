@@ -590,19 +590,17 @@ public class Node {
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 
-						System.out.println("put Domain and IP -> dom " + dom + " ip -> "+ ip );
+						System.out.println("put Domain -> IP: " + dom + " -> "+ ip );
 						domain.put(dom, ip);
-						System.out.println("Domain and IP in MAP -> dom " + dom + " ip -> "+ domain.get(dom) );
 					}else if(type.equals("putip")) {
 
 						String dom = (String) ois.readObject();
 						String ip = (String) ois.readObject();
 
-						System.out.println("put IP and Domain -> ip " + ip + " dom -> "+ dom );
+						System.out.println("put IP -> Domain: " + ip + " -> "+ dom );
 
 						ips.put(ip, dom);
 
-						System.out.println(" IP and Domain in MAP -> ip " + ip + " dom -> "+ ips.get(ip) );
 
 					}else if(type.equals("getd")) {
 						String dom = (String) ois.readObject();
