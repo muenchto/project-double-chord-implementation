@@ -69,9 +69,9 @@ Hopefullly now you have all ***.class** files in your current directory.
 	  
 	  After you create a node, you could input `info` at any time to check this node's socket address, predecessor and finger table. You could also terminate this node and leave chord ring by inputing `quit` or just press ctrl+C.
 
-2.	Run Query
+2.	Run Client
 	
-		java Query 10.190.92.156 8010
+		java Client 10.190.92.156 8010
 	
 	If the program cannot connect to the node you are trying to contact, it will exit. Or if the connection is successful, you will see the following lines:
 		
@@ -86,7 +86,7 @@ Hopefullly now you have all ***.class** files in your current directory.
 <br>	
 <h3>Programming details</h3>
 
-The **Node.java** includes all core data structure and functionalities for chord node. While **Chord.java** and **Query.java** are main classes for chord and query respectively. **Helper.java** includes some useful methods including computation, hashing and network services. Other classes are threads will be run during a node's life cycle (e.g. listener thread, stabilize thread, etc.).
+The **Node.java** includes all core data structure and functionalities for chord node. While **Chord.java** and **Client.java** are main classes for chord and query respectively. **Helper.java** includes some useful methods including computation, hashing and network services. Other classes are threads will be run during a node's life cycle (e.g. listener thread, stabilize thread, etc.).
 
 I added detailed comments to all source codes, so please check them if you'd like to. Also, please feel free to contact me if you need any other information. :)
 

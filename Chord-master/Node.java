@@ -151,6 +151,7 @@ public class Node {
 		InetSocketAddress most_recently_alive = this.localAddress;
         long findid_relative_id;
 
+        //dont look in a specific ring
         if (ring_nr == -1) {
 
             //check in which ring the findid is closer to local node

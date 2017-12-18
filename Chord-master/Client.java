@@ -6,14 +6,14 @@ import java.net.Socket;
 import java.util.Scanner;
 
 /**
- * Query class that offers the interface by which users can do search by
+ * Client class that offers the interface by which users can do search by
  * querying a valid chord node.
- * 
+ *
  * @author Chuan Xia
  *
  */
 
-public class Query {
+public class Client {
 
 	private static InetSocketAddress localAddress;
 	private static Helper helper;
@@ -208,13 +208,13 @@ public class Query {
 						command = userinput2.nextLine();
 
 						String[] tok = command.split(" ");
-						
+
 						while(tok.length != 2) {
 							System.out.println(" Insert get <Domain>");
 							command = userinput2.nextLine();
 							tok = command.split(" ");
 						}
-						
+
 						String ipp = getIPport(tok[1]);
 						String[] ipptk = ipp.split(":");
 
@@ -229,10 +229,28 @@ public class Query {
 							oos.flush();
 							String ret = (String) ios.readObject();
 
-							if (!ret.equals(null)) {
+							if (ret != null) {
 								System.out.println("The IP of Domain: " + tok[1] + " is: " + ret);
 							} else {
-								System.out.println("Some error occurred, may be u didn't put this Domain on Network");
+                                for (int i = 0; i < 2; i++) {
+
+                                    System.out.println("Could not find " + tok[1] + ". Retry in RING" + i);
+                                    ipp = getIPport(tok[1]);
+                                    ipptk = ipp.split(":");
+                                    ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1]) + 2000);
+
+                                    oos = new ObjectOutputStream(ss.getOutputStream());
+                                    ios = new ObjectInputStream(ss.getInputStream());
+                                    oos.flush();
+                                    oos.writeObject("getd");
+                                    oos.writeObject(tok[1]);
+                                    oos.flush();
+                                    ret = (String) ios.readObject();
+                                    if (ret != null) {
+                                        System.out.println("RING" + i +" The IP of Domain: " + tok[1] + " is: " + ret);
+                                        break;
+                                    }
+                                }
 							}
 
 							ios.close();
@@ -245,9 +263,9 @@ public class Query {
 					} else if (get.toUpperCase().equals("REVERSE")) {
 						System.out.println(" Insert get <IP>");
 						command = userinput3.nextLine();
-						
+
 						String[] tok = command.split(" ");
-						
+
 						while(tok.length != 2) {
 							System.out.println("Error with input, write correctly, like in example.");
 							System.out.println(" Insert get <IP>");
