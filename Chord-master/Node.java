@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -623,6 +624,7 @@ public class Node {
 					ss.close();
 
 				} catch (IOException | ClassNotFoundException e) {
+
 					e.printStackTrace();
 				}
 			}

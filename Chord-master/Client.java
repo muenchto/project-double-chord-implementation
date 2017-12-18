@@ -183,6 +183,7 @@ public class Client {
 
 						System.out.println("You putted this: put domain: " + tok[1] + " IP: " + tok[2]);
 
+						Thread.sleep(10);
 						oos1.close();
 						oos2.close();
 						oos3.close();
@@ -192,6 +193,8 @@ public class Client {
 						ss3.close();
 						ss4.close();
 					} catch (NumberFormatException | IOException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 
