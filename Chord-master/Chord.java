@@ -23,27 +23,27 @@ public class Chord {
 		m_helper = new Helper();
 		
 		// get local machine's ip 
-		String local_ip = null;
-		try {
-			local_ip = InetAddress.getLocalHost().getHostAddress();
-
-		} catch (UnknownHostException e1) {
-            e1.printStackTrace();
-		}
-
+//		String local_ip = null;
+//		try {
+//			local_ip = InetAddress.getLocalHost().getHostAddress();
+//
+//		} catch (UnknownHostException e1) {
+//            e1.printStackTrace();
+//		}
+	
         // create node
         //Another Comment
-		m_node = new Node (Helper.createSocketAddress(local_ip+":"+args[0]), NUM_RINGS);
+		m_node = new Node (Helper.createSocketAddress(args[0]+":"+args[1]), NUM_RINGS);
 		
 		// determine if it's creating or joining a existing ring
 		// create, contact is this node itself
-		if (args.length == 1) {
+		if (args.length == 2) {
 			m_contact = m_node.getAddress();
 		}
 		
 		// join, contact is another node
 		else if (args.length == 3) {
-			m_contact = Helper.createSocketAddress(args[1]+":"+args[2]);
+			m_contact = Helper.createSocketAddress(args[2]+":"+args[3]);
 			if (m_contact == null) {
 				System.out.println("Cannot find address you are trying to contact. Now exit.");
 				return;
@@ -66,7 +66,7 @@ public class Chord {
 		
 		// print join info
 		System.out.println("Joining the Chord ring.");
-		System.out.println("Local IP: "+local_ip);
+		System.out.println("Local IP: "+args[0]);
 		m_node.printNeighbors();
 		
 		// begin to take user input, "info" or "quit"
