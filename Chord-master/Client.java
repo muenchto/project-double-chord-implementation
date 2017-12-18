@@ -183,7 +183,7 @@ public class Client {
 
 						System.out.println("You putted this: put domain: " + tok[1] + " IP: " + tok[2]);
 
-						Thread.sleep(10);
+						Thread.sleep(100);
 						oos1.close();
 						oos2.close();
 						oos3.close();
@@ -238,7 +238,7 @@ public class Client {
                                 for (int i = 0; i < 2; i++) {
 
                                     System.out.println("Could not find " + tok[1] + ". Retry in RING" + i);
-                                    ipp = getIPport(tok[1]);
+                                    ipp = getIPport(tok[1], i);
                                     ipptk = ipp.split(":");
                                     ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1]) + 2000);
 
@@ -298,7 +298,7 @@ public class Client {
 								for (int i = 0; i < 2; i++) {
 
 									System.out.println("Could not find " + tok[1] + ". Retry in RING" + i);
-									ipp = getIPport(tok[1]);
+									ipp = getIPport(tok[1], i);
 									ipptk = ipp.split(":");
 									ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1]) + 2000);
 
