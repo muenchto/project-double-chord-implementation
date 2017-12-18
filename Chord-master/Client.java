@@ -203,13 +203,13 @@ public class Client {
 					get = userinput2.nextLine();
 
 					if (get.toUpperCase().equals("NORMAL")) {
-						System.out.println("Error with input, write correctly, like in example.");
 						System.out.println(" Insert get <Domain>");
 						command = userinput2.nextLine();
 
 						String[] tok = command.split(" ");
 
 						while(tok.length != 2) {
+							System.out.println("Error with input, write correctly, like in example.");
 							System.out.println(" Insert get <Domain>");
 							command = userinput2.nextLine();
 							tok = command.split(" ");
@@ -230,7 +230,7 @@ public class Client {
 							String ret = (String) ios.readObject();
 
 							if (ret != null) {
-								System.out.println("The IP of Domain: " + tok[1] + " is: " + ret);
+								System.out.println("The IP of Domain " + tok[1] + " is: " + ret);
 							} else {
                                 for (int i = 0; i < 2; i++) {
 
@@ -247,7 +247,7 @@ public class Client {
                                     oos.flush();
                                     ret = (String) ios.readObject();
                                     if (ret != null) {
-                                        System.out.println("RING" + i +" The IP of Domain: " + tok[1] + " is: " + ret);
+                                        System.out.println("RING" + i +" The IP of Domain " + tok[1] + " is: " + ret);
                                         break;
                                     }
                                 }
@@ -287,12 +287,30 @@ public class Client {
 							oos.writeObject(tok[1]);
 							oos.flush();
 
-							// Receive from Node
 							String ret = (String) ios.readObject();
-							if (!ret.equals(null)) {
-								System.out.println("The Domain of IP: " + tok[1] + " is: " + ret);
+							// Receive from Node
+							if (ret != null) {
+								System.out.println("The Domain of IP " + tok[1] + " is: " + ret);
 							} else {
-								System.out.println("Some error occurred, may be u didn't put this IP on Network");
+								for (int i = 0; i < 2; i++) {
+
+									System.out.println("Could not find " + tok[1] + ". Retry in RING" + i);
+									ipp = getIPport(tok[1]);
+									ipptk = ipp.split(":");
+									ss = new Socket(ipptk[0], Integer.parseInt(ipptk[1]) + 2000);
+
+									oos = new ObjectOutputStream(ss.getOutputStream());
+									ios = new ObjectInputStream(ss.getInputStream());
+									oos.flush();
+									oos.writeObject("getip");
+									oos.writeObject(tok[1]);
+									oos.flush();
+									ret = (String) ios.readObject();
+									if (ret != null) {
+										System.out.println("RING" + i +" The Domain of IP " + tok[1] + " is: " + ret);
+										break;
+									}
+								}
 							}
 
 							ios.close();
@@ -321,7 +339,7 @@ public class Client {
 	private static String getIPport(String command, int ring_nr) {
 		long hash = Helper.hashString(command);
 
-		System.out.println("\nHash value is " + Long.toHexString(hash));
+		//System.out.println("Hash value is " + Long.toHexString(hash));
 
 		InetSocketAddress result;
 		if (ring_nr == -1) {

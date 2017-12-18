@@ -42,7 +42,7 @@ public class Chord {
 		}
 		
 		// join, contact is another node
-		else if (args.length == 3) {
+		else if (args.length == 4) {
 			m_contact = Helper.createSocketAddress(args[2]+":"+args[3]);
 			if (m_contact == null) {
 				System.out.println("Cannot find address you are trying to contact. Now exit.");
